@@ -1,0 +1,11 @@
+_Store
+.DS
+*/.DS*
+*.o
+*.dSYM
+.vscode
+.idea
+CMakeLists.txt
+cmake-build-debug
+README.md
+wolf3d
