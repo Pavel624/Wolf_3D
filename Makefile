@@ -1,6 +1,6 @@
 NAME = wolf3d
 
-SRC_FILES  = main.c
+SRC_FILES  = main.c additional.c keys.c
 SRC_FOLDER = ./sources
 SRC = $(addprefix $(SRC_FOLDER)/, $(SRC_FILES))
 
@@ -33,14 +33,14 @@ VIOLET= \033[1;35m
 all: $(NAME)
 
 $(NAME): $(OBJ) $(LIBFT)
-	@gcc $(FLAGS) $(OBJ) $(LIBFT) $(LIBFLAGS) -I$(INC_LIB) -o $(NAME)
+	@gcc $(FLAGS) $(OBJ) $(LIBFT) $(LIBFLAGS) -I $(INC_LIB) -o $(NAME)
 	@echo "$(GREEN)Project is successfully compiled"
 
 $(LIBFT):
 	@make -C libft/
 	@echo "$(GREEN)Compiling library files$(VIOLET)"
 
-$(OBJ): $(SRC)
+$(OBJ_FOLDER)/%.o : $(SRC_FOLDER)/%.c
 	@mkdir -p $(OBJ_FOLDER)
 	@gcc $(FLAGS) -c $< -o $@ -I$(INC_LIB)
 

@@ -1,4 +1,4 @@
-_Store
+.DS_Store
 .DS
 */.DS*
 *.o
@@ -9,3 +9,4 @@ CMakeLists.txt
 cmake-build-debug
 README.md
 wolf3d
+libft/libft.a
