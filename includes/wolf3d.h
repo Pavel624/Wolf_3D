@@ -65,6 +65,7 @@ typedef struct  s_wolf_3d
     double      delta_dist_y;
     double      wall_dist;
     double      move_speed;
+    double      rotate_speed;
     int         **map;
     int         color;
 }               t_wolf_3d;
