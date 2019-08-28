@@ -12,6 +12,22 @@
 
 #include "../includes/wolf3d.h"
 
+void        load_textures(t_wolf_3d *wolf)
+{
+    int tex_width = 64;
+    int tex_height = 64;
+
+    wolf->tex[0].image = mlx_xpm_file_to_image(wolf->mlx,"textures/eridu91.xpm", &tex_width, &tex_height);
+    wolf->tex[0].ptr = mlx_get_data_addr(wolf->tex[0].image, &wolf->tex[0].bpp, &wolf->tex[0].line_s, &wolf->tex[0].endian);
+    wolf->tex[0].bpp /= 8;
+    wolf->tex[1].image = mlx_xpm_file_to_image(wolf->mlx,"textures/sand.xpm", &tex_width, &tex_height);
+    wolf->tex[1].ptr = mlx_get_data_addr(wolf->tex[1].image, &wolf->tex[1].bpp, &wolf->tex[1].line_s, &wolf->tex[1].endian);
+    wolf->tex[1].bpp /= 8;
+    wolf->tex[2].image = mlx_xpm_file_to_image(wolf->mlx,"textures/wood.xpm", &tex_width, &tex_height);
+    wolf->tex[2].ptr = mlx_get_data_addr(wolf->tex[2].image, &wolf->tex[2].bpp, &wolf->tex[2].line_s, &wolf->tex[2].endian);
+    wolf->tex[2].bpp /= 8;
+}
+
 int			index_matr(int row, int column, int map_width)
 {
     return (row * map_width + column);
@@ -20,7 +36,7 @@ int			index_matr(int row, int column, int map_width)
 void		img_pixel_put(t_image *img, int x, int y, int color)
 {
     if (x>= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
-        *(int *)(img->ptr + (int)(index_matr(y, x, WIDTH) * img->bpp)) = color;
+        *(int *) (img->ptr + (int) (index_matr(y, x, WIDTH) * img->bpp)) = color;
 }
 
 void init_wolf(t_wolf_3d *wolf)
@@ -32,10 +48,32 @@ void init_wolf(t_wolf_3d *wolf)
     wolf->move_speed = 0.2;
     wolf->rotate_speed = 2 * M_PI / 36;
     wolf->color = 0;
+    load_textures(wolf);
     // FOV = 2 * arctan(planeY / 1.0) - in degrees
 }
 
-void draw_walls(int x, int start, int end, t_wolf_3d *wolf)
+void draw_walls(int x, int start, int end, int side, t_wolf_3d *wolf)
+{
+    wolf->tex_num = wolf->map[wolf->map_x][wolf->map_y] - 1;
+    if (side == 0)
+        wolf->wall_x = wolf->pos_y + wolf->wall_dist * wolf->ray_dir_y;
+    else
+        wolf->wall_x = wolf->pos_x + wolf->wall_dist * wolf->ray_dir_x;
+    wolf->wall_x -= floor(wolf->wall_x);
+    wolf->tex_x = (int) (wolf->wall_x * (double) TEX_WIDTH);
+    if ((side == 0 && wolf->ray_dir_x > 0) || (side == 1 && wolf->ray_dir_y < 0))
+        wolf->tex_x = TEX_WIDTH - wolf->tex_x - 1;
+    wolf->tex_x = wolf->tex_x;
+    while (++start < end)
+    {
+        int d = start * 256 - HEIGHT * 128 + wolf->line_height * 128;
+        wolf->tex_y = ((d * TEX_HEIGHT) / wolf->line_height) / 256;
+        wolf->color = (int) (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4] << 4);
+        img_pixel_put(&wolf->image, x, start, wolf->color);
+    }
+}
+
+void draw_sky(int x, int start, int end, t_wolf_3d *wolf)
 {
     while (++start <= end)
         img_pixel_put(&wolf->image, x, start, wolf->color);
@@ -44,7 +82,6 @@ void draw_walls(int x, int start, int end, t_wolf_3d *wolf)
 void ray_caster(t_wolf_3d *wolf)
 {
     int x;
-    int line_height;
     int draw_start;
     //direction of the ray (1 or -1 for both step-x and step_ y)
     int step_x;
@@ -114,29 +151,19 @@ void ray_caster(t_wolf_3d *wolf)
             wolf->wall_dist = (wolf->map_y - wolf->pos_y + (1 - step_y) * 1.0 / 2) / wolf->ray_dir_y;
 
         // height of line to draw on the screen
-        line_height = (int) (HEIGHT / wolf->wall_dist);
+        wolf->line_height = (int) (HEIGHT / wolf->wall_dist);
 
         wolf->color = 0x87CEEB;
-        draw_walls(x, 0, HEIGHT - 1, wolf);
+        draw_sky(x, 0, HEIGHT - 1, wolf);
         // highest and lowest pixel to calculate
-        draw_start = HEIGHT / 2 - line_height / 2;
+        draw_start = HEIGHT / 2 - wolf->line_height / 2;
         if (draw_start < 0)
             draw_start = 0;
         int draw_end;
-        draw_end = HEIGHT / 2 + line_height / 2;
+        draw_end = HEIGHT / 2 + wolf->line_height / 2;
         if (draw_end >= HEIGHT)
             draw_end = HEIGHT - 1;
-        if (wolf->map[wolf->map_x][wolf->map_y] == 1)
-            wolf->color = 0xFF0000;
-        else if (wolf->map[wolf->map_x][wolf->map_y] == 2)
-            wolf->color = 0x00FF00;
-        else if (wolf->map[wolf->map_x][wolf->map_y] == 3)
-            wolf->color = 0x0000FF;
-        else
-            wolf->color = 0xFFFFFF;
-        if (side == 0)
-            wolf->color /= 2;
-        draw_walls(x, draw_start, draw_end, wolf);
+        draw_walls(x, draw_start, draw_end, side, wolf);
         x++;
     }
     mlx_put_image_to_window(wolf->mlx, wolf->window, wolf->image.image, 0, 0);

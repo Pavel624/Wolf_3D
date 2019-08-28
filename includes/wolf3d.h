@@ -22,6 +22,8 @@
 
 # define WIDTH 1024
 # define HEIGHT 1024
+# define TEX_WIDTH 64
+# define TEX_HEIGHT 64
 
 # define KEY_ESC 53
 
@@ -44,6 +46,7 @@ typedef struct  s_wolf_3d
     void		*mlx;
     void		*window;
     t_image		image;
+    t_image     tex[3];
     char        *name;
     int         fd;
     int         cols;
@@ -67,12 +70,19 @@ typedef struct  s_wolf_3d
     double      move_speed;
     double      rotate_speed;
     int         **map;
+    int         tex_num;
+    int         d;
+    int         line_height;
+    int         tex_y;
+    double      wall_x;
+    int         tex_x;
     int         flag;
     int         color;
 }               t_wolf_3d;
 
 void    ray_caster(t_wolf_3d *wolf);
 void    init_wolf(t_wolf_3d *wolf);
+void    load_textures(t_wolf_3d *wolf);
 
 int		key_trans(int key, t_wolf_3d *wolf);
 int		key_down(int key);
