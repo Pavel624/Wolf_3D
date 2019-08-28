@@ -25,14 +25,12 @@ void		img_pixel_put(t_image *img, int x, int y, int color)
 
 void init_wolf(t_wolf_3d *wolf)
 {
-    wolf->pos_x = 2;
-    wolf->pos_y = 2;
     wolf->dir_x = -1;
     wolf->dir_y = 0;
     wolf->plane_x = 0;
     wolf->plane_y = 0.66;
     wolf->move_speed = 0.2;
-    wolf->rotate_speed = M_PI / 12;
+    wolf->rotate_speed = 2 * M_PI / 36;
     wolf->color = 0;
     // FOV = 2 * arctan(planeY / 1.0) - in degrees
 }
@@ -66,8 +64,8 @@ void ray_caster(t_wolf_3d *wolf)
         wolf->map_x = (int) wolf->pos_x;
         wolf->map_y = (int) wolf->pos_y;
 
-        wolf->delta_dist_x = ABS(1.0 / wolf->ray_dir_x);
-        wolf->delta_dist_y = ABS(1.0 / wolf->ray_dir_y);
+        wolf->delta_dist_x = fabs(1.0 / wolf->ray_dir_x);
+        wolf->delta_dist_y = fabs(1.0 / wolf->ray_dir_y);
 
         hit = 0;
 
@@ -94,7 +92,8 @@ void ray_caster(t_wolf_3d *wolf)
         }
         while (hit == 0)
         {
-            if (wolf->side_dist_x < wolf->side_dist_y)
+
+            if ((wolf->side_dist_x < wolf->side_dist_y))
             {
                 wolf->side_dist_x += wolf->delta_dist_x;
                 wolf->map_x += step_x;

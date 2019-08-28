@@ -12,6 +12,53 @@
 
 #include "../includes/wolf3d.h"
 
+int check_int_map2(t_wolf_3d *wolf, int i, int j)
+{
+    if (wolf->map[i][j] < 0)
+        return (-1);
+    if ((i == 0) || (j == 0) || (i == (wolf->lines - 1)) || (j == (wolf->cols - 1)))
+    {
+        if (wolf->map[i][j] == 0)
+            return (-1);
+    }
+    if ((wolf->map[i][j] == 5) && (wolf->flag == 0))
+    {
+        wolf->pos_x = i;
+        wolf->pos_y = j;
+        wolf->flag = 1;
+        wolf->map[i][j] = 0;
+    }
+    else if ((wolf->map[i][j] == 5) && (wolf->flag == 1))
+        return (-1);
+    return (0);
+
+}
+
+int check_int_map(t_wolf_3d *wolf)
+{
+    int	i;
+    int	j;
+
+    i = 0;
+    wolf->pos_x = 0;
+    wolf->pos_y = 0;
+    wolf->flag = 0;
+    while (i < wolf->lines)
+    {
+        j = 0;
+        while (j < wolf->cols)
+        {
+            if (check_int_map2(wolf, i, j) == -1)
+                return (-1);
+            j++;
+        }
+        i++;
+    }
+    if ((wolf->pos_x == 0) || (wolf->pos_x == 0))
+        return (-1);
+    return (0);
+}
+
 int check_map_one(t_wolf_3d *wolf)
 {
     char	*line;
@@ -87,14 +134,14 @@ int		check_map_two(t_wolf_3d *wolf)
     char	*line;
     char	**tab;
 
-    if ((check_map_two2(wolf) == -1) || ((wolf->map = malloc(sizeof(int **) * (wolf->lines - 1))) == NULL))
+    if ((check_map_two2(wolf) == -1) || ((wolf->map =(int **)malloc(sizeof(int *) * (wolf->lines))) == NULL))
         return (-1);
     a[1] = 0;
     wolf->fd = open(wolf->name, O_RDONLY);
     while ((a[0] = get_next_line(wolf->fd, &line)) > 0)
     {
         tab = ft_strsplit(line, ' ');
-        wolf->map[a[1]] = malloc(sizeof(int *) * (wolf->cols - 1));
+        wolf->map[a[1]] = (int*)malloc(sizeof(int) * (wolf->cols));
         a[2] = 0;
         while (tab[a[2]] != NULL)
         {
@@ -114,7 +161,7 @@ int     valid(t_wolf_3d *wolf)
     int	i;
     int	j;
 
-    if ((check_map_one(wolf) == -1) || (check_map_two(wolf) == -1))
+    if ((check_map_one(wolf) == -1) || (check_map_two(wolf) == -1) || (check_int_map(wolf) == -1))
     {
         ft_putstr("error map\n");
         return (0);

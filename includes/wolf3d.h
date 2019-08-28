@@ -20,8 +20,8 @@
 # include <fcntl.h>
 # include <stdio.h>
 
-# define WIDTH 1280
-# define HEIGHT 900
+# define WIDTH 1024
+# define HEIGHT 1024
 
 # define KEY_ESC 53
 
@@ -67,6 +67,7 @@ typedef struct  s_wolf_3d
     double      move_speed;
     double      rotate_speed;
     int         **map;
+    int         flag;
     int         color;
 }               t_wolf_3d;
 
