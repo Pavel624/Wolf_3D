@@ -16,16 +16,23 @@ void        load_textures(t_wolf_3d *wolf)
 {
     int tex_width = 64;
     int tex_height = 64;
+    t_image *image0;
+    t_image *image1;
+    t_image *image2;
 
-    wolf->tex[0].image = mlx_xpm_file_to_image(wolf->mlx,"textures/eridu91.xpm", &tex_width, &tex_height);
-    wolf->tex[0].ptr = mlx_get_data_addr(wolf->tex[0].image, &wolf->tex[0].bpp, &wolf->tex[0].line_s, &wolf->tex[0].endian);
-    wolf->tex[0].bpp /= 8;
-    wolf->tex[1].image = mlx_xpm_file_to_image(wolf->mlx,"textures/sand.xpm", &tex_width, &tex_height);
-    wolf->tex[1].ptr = mlx_get_data_addr(wolf->tex[1].image, &wolf->tex[1].bpp, &wolf->tex[1].line_s, &wolf->tex[1].endian);
-    wolf->tex[1].bpp /= 8;
-    wolf->tex[2].image = mlx_xpm_file_to_image(wolf->mlx,"textures/wood.xpm", &tex_width, &tex_height);
-    wolf->tex[2].ptr = mlx_get_data_addr(wolf->tex[2].image, &wolf->tex[2].bpp, &wolf->tex[2].line_s, &wolf->tex[2].endian);
-    wolf->tex[2].bpp /= 8;
+    image0 = &wolf->tex[0];
+    image1 = &wolf->tex[1];
+    image2 = &wolf->tex[2];
+
+    image0->image = mlx_xpm_file_to_image(wolf->mlx,"textures/eridu91.xpm", &tex_width, &tex_height);
+    image0->ptr = mlx_get_data_addr(image0->image, &image0->bpp, &image0->line_s, &image0->endian);
+    image0->bpp /= 8;
+    image1->image = mlx_xpm_file_to_image(wolf->mlx,"textures/wood.xpm", &tex_width, &tex_height);
+    image1->ptr = mlx_get_data_addr(image1->image, &image1->bpp, &image1->line_s, &image1->endian);
+    image1->bpp /= 8;
+    image2->image = mlx_xpm_file_to_image(wolf->mlx,"textures/sand.xpm", &tex_width, &tex_height);
+    image2->ptr = mlx_get_data_addr(image2->image, &image2->bpp, &image2->line_s, &image2->endian);
+    image2->bpp /= 8;
 }
 
 int			index_matr(int row, int column, int map_width)
@@ -68,7 +75,7 @@ void draw_walls(int x, int start, int end, int side, t_wolf_3d *wolf)
     {
         int d = start * 256 - HEIGHT * 128 + wolf->line_height * 128;
         wolf->tex_y = ((d * TEX_HEIGHT) / wolf->line_height) / 256;
-        wolf->color = (int) (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4] << 4);
+        wolf->color = (int) ((wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]) | (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]  << 8) | (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]  << 16));
         img_pixel_put(&wolf->image, x, start, wolf->color);
     }
 }
