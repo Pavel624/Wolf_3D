@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   wolf3d.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nbethany <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: rsatterf <rsatterf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/21 23:36:08 by nbethany          #+#    #+#             */
-/*   Updated: 2019/08/21 23:36:12 by nbethany         ###   ########.fr       */
+/*   Updated: 2019/08/30 13:43:00 by rsatterf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@
 # define KEY_LEFT 123
 # define KEY_RIGHT 124
 
+# define KEY_SPACEBAR 49
+
 typedef struct	s_image
 {
     void		*image;
@@ -46,7 +48,7 @@ typedef struct  s_wolf_3d
     void		*mlx;
     void		*window;
     t_image		image;
-    t_image     tex[3];
+    t_image     tex[6];
     char        *name;
     int         fd;
     int         cols;

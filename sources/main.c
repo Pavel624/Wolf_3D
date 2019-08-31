@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nbethany <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: rsatterf <rsatterf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/21 23:41:30 by nbethany          #+#    #+#             */
-/*   Updated: 2019/08/21 23:41:35 by nbethany         ###   ########.fr       */
+/*   Updated: 2019/08/30 14:04:57 by rsatterf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ int check_int_map(t_wolf_3d *wolf)
         }
         i++;
     }
-    if ((wolf->pos_x == 0) || (wolf->pos_x == 0))
+    if ((wolf->pos_x == 0) || (wolf->pos_y == 0))
         return (-1);
     return (0);
 }
@@ -69,6 +69,7 @@ int check_map_one(t_wolf_3d *wolf)
     if ((k = get_next_line(wolf->fd, &line)) == 0)
         return (-1);
     close(wolf->fd);
+	free (line);
     wolf->fd = open(wolf->name, O_RDONLY);
     while ((k = get_next_line(wolf->fd, &line)) > 0)
     {
@@ -82,6 +83,7 @@ int check_map_one(t_wolf_3d *wolf)
         }
     }
     close(wolf->fd);
+	free (line);
     return (0);
 }
 
@@ -153,6 +155,7 @@ int		check_map_two(t_wolf_3d *wolf)
         a[1]++;
     }
     close(wolf->fd);
+	free(line);
     return ((a[0] == -1) ? -1 : 0);
 }
 
@@ -171,7 +174,7 @@ int     valid(t_wolf_3d *wolf)
         printf("%s\n", "good");
         printf("%d\n", wolf->lines);
         printf("%d\n", wolf->cols);
-        i = 0;
+         i = 0;
         while (i < wolf->lines)
         {
             j = 0;

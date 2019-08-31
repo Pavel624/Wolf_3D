@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   additional.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nbethany <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: rsatterf <rsatterf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/24 13:45:02 by nbethany          #+#    #+#             */
-/*   Updated: 2019/08/24 13:45:05 by nbethany         ###   ########.fr       */
+/*   Updated: 2019/08/30 13:40:03 by rsatterf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,23 +16,28 @@ void        load_textures(t_wolf_3d *wolf)
 {
     int tex_width = 64;
     int tex_height = 64;
-    t_image *image0;
-    t_image *image1;
-    t_image *image2;
+	int a = 512;
+	int b = 512;
+	int pistol_res = 192;
 
-    image0 = &wolf->tex[0];
-    image1 = &wolf->tex[1];
-    image2 = &wolf->tex[2];
-
-    image0->image = mlx_xpm_file_to_image(wolf->mlx,"textures/eridu91.xpm", &tex_width, &tex_height);
-    image0->ptr = mlx_get_data_addr(image0->image, &image0->bpp, &image0->line_s, &image0->endian);
-    image0->bpp /= 8;
-    image1->image = mlx_xpm_file_to_image(wolf->mlx,"textures/wood.xpm", &tex_width, &tex_height);
-    image1->ptr = mlx_get_data_addr(image1->image, &image1->bpp, &image1->line_s, &image1->endian);
-    image1->bpp /= 8;
-    image2->image = mlx_xpm_file_to_image(wolf->mlx,"textures/sand.xpm", &tex_width, &tex_height);
-    image2->ptr = mlx_get_data_addr(image2->image, &image2->bpp, &image2->line_s, &image2->endian);
-    image2->bpp /= 8;
+    wolf->tex[0].image = mlx_xpm_file_to_image(wolf->mlx,"textures/stone.xpm", &tex_width, &tex_height);
+    wolf->tex[0].ptr = mlx_get_data_addr(wolf->tex[0].image, &wolf->tex[0].bpp, &wolf->tex[0].line_s, &wolf->tex[0].endian);
+    wolf->tex[0].bpp /= 8;
+    wolf->tex[1].image = mlx_xpm_file_to_image(wolf->mlx,"textures/sand.xpm", &tex_width, &tex_height);
+    wolf->tex[1].ptr = mlx_get_data_addr(wolf->tex[1].image, &wolf->tex[1].bpp, &wolf->tex[1].line_s, &wolf->tex[1].endian);
+    wolf->tex[1].bpp /= 8;
+    wolf->tex[2].image = mlx_xpm_file_to_image(wolf->mlx,"textures/wood.xpm", &tex_width, &tex_height);
+    wolf->tex[2].ptr = mlx_get_data_addr(wolf->tex[2].image, &wolf->tex[2].bpp, &wolf->tex[2].line_s, &wolf->tex[2].endian);
+    wolf->tex[2].bpp /= 8;
+	wolf->tex[3].image = mlx_xpm_file_to_image(wolf->mlx,"textures/mossy.xpm", &tex_width, &tex_height);
+    wolf->tex[3].ptr = mlx_get_data_addr(wolf->tex[3].image, &wolf->tex[3].bpp, &wolf->tex[3].line_s, &wolf->tex[3].endian);
+    wolf->tex[3].bpp /= 8;
+	wolf->tex[4].image = mlx_xpm_file_to_image(wolf->mlx,"textures/sky.xpm", &a, &b);
+    wolf->tex[4].ptr = mlx_get_data_addr(wolf->tex[4].image, &wolf->tex[4].bpp, &wolf->tex[4].line_s, &wolf->tex[4].endian);
+    wolf->tex[4].bpp /= 8;
+    wolf->tex[5].image = mlx_xpm_file_to_image(wolf->mlx,"textures/gun.xpm", &pistol_res, &pistol_res);
+    wolf->tex[5].ptr = mlx_get_data_addr(wolf->tex[5].image, &wolf->tex[5].bpp, &wolf->tex[5].line_s, &wolf->tex[5].endian);
+    wolf->tex[5].bpp /= 8;
 }
 
 int			index_matr(int row, int column, int map_width)
@@ -40,10 +45,53 @@ int			index_matr(int row, int column, int map_width)
     return (row * map_width + column);
 }
 
-void		img_pixel_put(t_image *img, int x, int y, int color)
+void		img_pixel_put_one(t_image *img, int x, int y, int color)
 {
     if (x>= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
         *(int *) (img->ptr + (int) (index_matr(y, x, WIDTH) * img->bpp)) = color;
+}
+
+void		img_pixel_put_two(t_image *img, int x, int y, t_wolf_3d *wolf)
+{
+    if (x>= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
+        //*(int *) (img->ptr + (int) (index_matr(y, x, WIDTH) * img->bpp)) = color;
+		ft_memcpy(img->ptr + 4 * WIDTH * y + x * 4, &wolf->tex[wolf->tex_num].ptr[wolf->tex_y % 64 * wolf->tex[wolf->tex_num].line_s + wolf->tex_x % 64 * wolf->tex[wolf->tex_num].bpp], sizeof(int));
+}
+
+ void	draw_sky(t_image *img,t_wolf_3d *wolf)
+{
+	wolf->tex_x = 0;
+	while (wolf->tex_x < WIDTH)
+	{
+		wolf->tex_y = 0;
+		while (wolf->tex_y < HEIGHT / 2)
+		{
+			ft_memcpy(img->ptr + 4 * WIDTH * wolf->tex_y + wolf->tex_x * 4, &wolf->tex[4].ptr[wolf->tex_y % 512 * wolf->tex[4].line_s + wolf->tex_x % 512 * wolf->tex[4].bpp], sizeof(int));
+			wolf->tex_y++;
+		}
+		wolf->tex_x++;
+	}
+}
+
+void	draw_pistol(t_image *img,t_wolf_3d *wolf)
+{
+    wolf->tex_x = WIDTH / 2 - 96;
+    while (wolf->tex_x < WIDTH / 2 + 96)
+    {
+        wolf->tex_y = HEIGHT - 1;
+        while (wolf->tex_y > HEIGHT - 192)
+        {
+            ft_memcpy(img->ptr + 4 * WIDTH * wolf->tex_y + wolf->tex_x * 4, &wolf->tex[5].ptr[wolf->tex_y % 192 * wolf->tex[5].line_s + wolf->tex_x % 192 * wolf->tex[5].bpp], sizeof(int));
+            wolf->tex_y--;
+        }
+        wolf->tex_x++;
+    }
+}
+
+ void draw_floor(int x, int start, int end, t_wolf_3d *wolf)
+{
+    while (++start <= end)
+        img_pixel_put_one(&wolf->image, x, start, wolf->color);
 }
 
 void init_wolf(t_wolf_3d *wolf)
@@ -55,12 +103,18 @@ void init_wolf(t_wolf_3d *wolf)
     wolf->move_speed = 0.2;
     wolf->rotate_speed = 2 * M_PI / 36;
     wolf->color = 0;
+	wolf->flag = 0;
     load_textures(wolf);
     // FOV = 2 * arctan(planeY / 1.0) - in degrees
 }
 
 void draw_walls(int x, int start, int end, int side, t_wolf_3d *wolf)
 {
+	if (wolf->flag == 0)
+	{
+		draw_sky(&wolf->image, wolf);
+		wolf->flag = 1;
+	}
     wolf->tex_num = wolf->map[wolf->map_x][wolf->map_y] - 1;
     if (side == 0)
         wolf->wall_x = wolf->pos_y + wolf->wall_dist * wolf->ray_dir_y;
@@ -70,20 +124,15 @@ void draw_walls(int x, int start, int end, int side, t_wolf_3d *wolf)
     wolf->tex_x = (int) (wolf->wall_x * (double) TEX_WIDTH);
     if ((side == 0 && wolf->ray_dir_x > 0) || (side == 1 && wolf->ray_dir_y < 0))
         wolf->tex_x = TEX_WIDTH - wolf->tex_x - 1;
-    wolf->tex_x = wolf->tex_x;
+    wolf->tex_x = abs(wolf->tex_x);
     while (++start < end)
     {
         int d = start * 256 - HEIGHT * 128 + wolf->line_height * 128;
-        wolf->tex_y = ((d * TEX_HEIGHT) / wolf->line_height) / 256;
-        wolf->color = (int) ((wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]) | (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]  << 8) | (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]  << 16));
-        img_pixel_put(&wolf->image, x, start, wolf->color);
+        wolf->tex_y = abs(((d * TEX_HEIGHT) / wolf->line_height) / 256);
+        //wolf->color = (int) ((wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]) | (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]  << 8)
+		//| (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]  << 16));
+        img_pixel_put_two(&wolf->image, x, start, wolf);
     }
-}
-
-void draw_sky(int x, int start, int end, t_wolf_3d *wolf)
-{
-    while (++start <= end)
-        img_pixel_put(&wolf->image, x, start, wolf->color);
 }
 
 void ray_caster(t_wolf_3d *wolf)
@@ -159,9 +208,8 @@ void ray_caster(t_wolf_3d *wolf)
 
         // height of line to draw on the screen
         wolf->line_height = (int) (HEIGHT / wolf->wall_dist);
-
-        wolf->color = 0x87CEEB;
-        draw_sky(x, 0, HEIGHT - 1, wolf);
+        wolf->color = 0x808080;
+        draw_floor(x, HEIGHT / 2, HEIGHT - 1, wolf);
         // highest and lowest pixel to calculate
         draw_start = HEIGHT / 2 - wolf->line_height / 2;
         if (draw_start < 0)
@@ -173,5 +221,7 @@ void ray_caster(t_wolf_3d *wolf)
         draw_walls(x, draw_start, draw_end, side, wolf);
         x++;
     }
+    draw_pistol(&wolf->image, wolf);
     mlx_put_image_to_window(wolf->mlx, wolf->window, wolf->image.image, 0, 0);
+	//mlx_destroy_image(wolf->mlx, wolf->image.image);
 }
