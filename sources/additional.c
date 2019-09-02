@@ -35,7 +35,7 @@ void        load_textures(t_wolf_3d *wolf)
 	wolf->tex[4].image = mlx_xpm_file_to_image(wolf->mlx,"textures/sky.xpm", &a, &b);
     wolf->tex[4].ptr = mlx_get_data_addr(wolf->tex[4].image, &wolf->tex[4].bpp, &wolf->tex[4].line_s, &wolf->tex[4].endian);
     wolf->tex[4].bpp /= 8;
-    wolf->tex[5].image = mlx_xpm_file_to_image(wolf->mlx,"textures/gun.xpm", &pistol_res, &pistol_res);
+    wolf->tex[5].image = mlx_xpm_file_to_image(wolf->mlx,"textures/gun_1.xpm", &pistol_res, &pistol_res);
     wolf->tex[5].ptr = mlx_get_data_addr(wolf->tex[5].image, &wolf->tex[5].bpp, &wolf->tex[5].line_s, &wolf->tex[5].endian);
     wolf->tex[5].bpp /= 8;
 }
@@ -75,23 +75,72 @@ void		img_pixel_put_two(t_image *img, int x, int y, t_wolf_3d *wolf)
 
 void	draw_pistol(t_image *img,t_wolf_3d *wolf)
 {
-    wolf->tex_x = WIDTH / 2 - 96;
+    wolf->tex_x = WIDTH / 2 - 150;
     while (wolf->tex_x < WIDTH / 2 + 96)
     {
-        wolf->tex_y = HEIGHT - 1;
-        while (wolf->tex_y > HEIGHT - 192)
+        wolf->tex_y = HEIGHT - 150;
+        while (wolf->tex_y < HEIGHT - 1)
         {
-            ft_memcpy(img->ptr + 4 * WIDTH * wolf->tex_y + wolf->tex_x * 4, &wolf->tex[5].ptr[wolf->tex_y % 192 * wolf->tex[5].line_s + wolf->tex_x % 192 * wolf->tex[5].bpp], sizeof(int));
-            wolf->tex_y--;
+            if (wolf->tex[5].ptr[wolf->tex_y % 192 * wolf->tex[5].line_s + wolf->tex_x % 192 * wolf->tex[5].bpp] != 0)
+                ft_memcpy(img->ptr + 4 * WIDTH * wolf->tex_y + wolf->tex_x * 4, &wolf->tex[5].ptr[wolf->tex_y % 192 * wolf->tex[5].line_s + wolf->tex_x % 192 * wolf->tex[5].bpp], sizeof(int));
+            wolf->tex_y++;
         }
         wolf->tex_x++;
     }
 }
 
- void draw_floor(int x, int start, int end, t_wolf_3d *wolf)
+ void draw_floor(int x, int side, t_wolf_3d *wolf)
 {
-    while (++start <= end)
-        img_pixel_put_one(&wolf->image, x, start, wolf->color);
+    double floor_x_wall;
+    double floor_y_wall;
+    double current_dist;
+    int y;
+
+    if (side == 0 && wolf->ray_dir_x > 0)
+    {
+        floor_x_wall = wolf->map_x;
+        floor_y_wall = wolf->map_y + wolf->wall_x;
+    }
+    else if (side == 0 && wolf->ray_dir_x < 0)
+    {
+        floor_x_wall = wolf->map_x + 1.0;
+        floor_y_wall = wolf->map_y + wolf->wall_x;
+    }
+    else if (side == 1 && wolf->ray_dir_y > 0)
+    {
+        floor_x_wall = wolf->map_x + wolf->wall_x;
+        floor_y_wall = wolf->map_y;
+    }
+    else
+    {
+        floor_x_wall = wolf->map_x + wolf->wall_x;
+        floor_y_wall = wolf->map_y + 1.0;
+    }
+    if (wolf->draw_end < 0)
+        wolf->draw_end = HEIGHT;
+
+    wolf->tex_num = wolf->map[wolf->map_x][wolf->map_y] - 1;
+    y = wolf->draw_end;
+    while (y < HEIGHT)
+    {
+        current_dist = HEIGHT / (2.0 * y - HEIGHT);
+        double weight = current_dist/ wolf->wall_dist;
+        double current_floor_x = weight * floor_x_wall + (1.0 - weight) * wolf->pos_x;
+        double current_floor_y = weight * floor_y_wall + (1.0 - weight) * wolf->pos_y;
+
+        int floor_tex_x, floor_tex_y;
+        floor_tex_x = (int)(current_floor_x * TEX_WIDTH) % TEX_WIDTH;
+        floor_tex_y = (int)(current_floor_y * TEX_HEIGHT) % TEX_HEIGHT;
+        //need some adjustments to make this piece of code more understandable
+        int r = (wolf->tex[1].ptr[wolf->tex[1].line_s * floor_tex_y + floor_tex_x * 4 + 2]) * 65536;
+        int g = (wolf->tex[1].ptr[wolf->tex[1].line_s * floor_tex_y + floor_tex_x * 4 + 1]) * 256;
+        int b = (wolf->tex[1].ptr[wolf->tex[1].line_s * floor_tex_y + floor_tex_x * 4]);
+        wolf->color = r + g + b;
+        wolf->color = wolf->color >> 1 & 0x7F7F7F;
+        img_pixel_put_one(&wolf->image, x, y, wolf->color);
+        y++;
+    }
+
 }
 
 void init_wolf(t_wolf_3d *wolf)
@@ -108,7 +157,7 @@ void init_wolf(t_wolf_3d *wolf)
     // FOV = 2 * arctan(planeY / 1.0) - in degrees
 }
 
-void draw_walls(int x, int start, int end, int side, t_wolf_3d *wolf)
+void draw_walls(int x, int side, t_wolf_3d *wolf)
 {
 	if (wolf->flag == 0)
 	{
@@ -125,20 +174,17 @@ void draw_walls(int x, int start, int end, int side, t_wolf_3d *wolf)
     if ((side == 0 && wolf->ray_dir_x > 0) || (side == 1 && wolf->ray_dir_y < 0))
         wolf->tex_x = TEX_WIDTH - wolf->tex_x - 1;
     wolf->tex_x = abs(wolf->tex_x);
-    while (++start < end)
+    while (++wolf->draw_start < wolf->draw_end)
     {
-        int d = start * 256 - HEIGHT * 128 + wolf->line_height * 128;
+        int d = wolf->draw_start * 256 - HEIGHT * 128 + wolf->line_height * 128;
         wolf->tex_y = abs(((d * TEX_HEIGHT) / wolf->line_height) / 256);
-        //wolf->color = (int) ((wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]) | (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]  << 8)
-		//| (wolf->tex[wolf->tex_num].ptr[index_matr(wolf->tex_y, wolf->tex_x, TEX_WIDTH) * 4]  << 16));
-        img_pixel_put_two(&wolf->image, x, start, wolf);
+        img_pixel_put_two(&wolf->image, x, wolf->draw_start, wolf);
     }
 }
 
 void ray_caster(t_wolf_3d *wolf)
 {
     int x;
-    int draw_start;
     //direction of the ray (1 or -1 for both step-x and step_ y)
     int step_x;
     int step_y;
@@ -209,16 +255,16 @@ void ray_caster(t_wolf_3d *wolf)
         // height of line to draw on the screen
         wolf->line_height = (int) (HEIGHT / wolf->wall_dist);
         wolf->color = 0x808080;
-        draw_floor(x, HEIGHT / 2, HEIGHT - 1, wolf);
+        //draw_floor(x, HEIGHT / 2, HEIGHT - 1, wolf);
         // highest and lowest pixel to calculate
-        draw_start = HEIGHT / 2 - wolf->line_height / 2;
-        if (draw_start < 0)
-            draw_start = 0;
-        int draw_end;
-        draw_end = HEIGHT / 2 + wolf->line_height / 2;
-        if (draw_end >= HEIGHT)
-            draw_end = HEIGHT - 1;
-        draw_walls(x, draw_start, draw_end, side, wolf);
+        wolf->draw_start = HEIGHT / 2 - wolf->line_height / 2;
+        if (wolf->draw_start < 0)
+            wolf->draw_start = 0;
+        wolf->draw_end = HEIGHT / 2 + wolf->line_height / 2;
+        if (wolf->draw_end >= HEIGHT)
+            wolf->draw_end = HEIGHT - 1;
+        draw_walls(x, side, wolf);
+        draw_floor(x, side, wolf);
         x++;
     }
     draw_pistol(&wolf->image, wolf);

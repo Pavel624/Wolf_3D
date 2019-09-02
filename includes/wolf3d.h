@@ -19,9 +19,10 @@
 # include <stdlib.h>
 # include <fcntl.h>
 # include <stdio.h>
+#include <sys/types.h>
 
 # define WIDTH 1024
-# define HEIGHT 1024
+# define HEIGHT 768
 # define TEX_WIDTH 64
 # define TEX_HEIGHT 64
 
@@ -31,6 +32,10 @@
 # define KEY_DOWN 125
 # define KEY_LEFT 123
 # define KEY_RIGHT 124
+# define KEY_W 13
+# define KEY_D 2
+# define KEY_A 0
+# define KEY_S 1
 
 # define KEY_SPACEBAR 49
 
@@ -78,6 +83,13 @@ typedef struct  s_wolf_3d
     int         tex_y;
     double      wall_x;
     int         tex_x;
+    int         draw_start;
+    int         draw_end;
+    double      current_floor_x;
+    double      current_floor_y;
+    int         floor_tex_x;
+    int         floor_tex_y;
+    double      weight;
     int         flag;
     int         color;
 }               t_wolf_3d;
