@@ -6,7 +6,7 @@
 /*   By: rsatterf <rsatterf@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/21 23:36:08 by nbethany          #+#    #+#             */
-/*   Updated: 2019/08/30 13:43:00 by rsatterf         ###   ########.fr       */
+/*   Updated: 2019/09/04 17:41:56 by rsatterf         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,10 +50,12 @@ typedef struct	s_image
 
 typedef struct  s_wolf_3d
 {
+    int			er;
     void		*mlx;
     void		*window;
     t_image		image;
     t_image     tex[6];
+    t_image     pistol[4];
     char        *name;
     int         fd;
     int         cols;
@@ -92,6 +94,8 @@ typedef struct  s_wolf_3d
     double      weight;
     int         flag;
     int         color;
+    int         shot_flag;
+    int         shot_frames;
 }               t_wolf_3d;
 
 void    ray_caster(t_wolf_3d *wolf);
@@ -99,6 +103,8 @@ void    init_wolf(t_wolf_3d *wolf);
 void    load_textures(t_wolf_3d *wolf);
 
 int		key_trans(int key, t_wolf_3d *wolf);
-int		key_down(int key);
+int		key_down(int key, t_wolf_3d *wolf);
+
+void loop(t_wolf_3d *wolf);
 
 #endif
