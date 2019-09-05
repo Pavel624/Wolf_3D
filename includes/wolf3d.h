@@ -48,6 +48,14 @@ typedef struct	s_image
     int			endian;
 }				t_image;
 
+typedef struct  s_move
+{
+    int forward;
+    int back;
+    int right;
+    int left;
+}               t_move;
+
 typedef struct  s_wolf_3d
 {
     int			er;
@@ -56,6 +64,7 @@ typedef struct  s_wolf_3d
     t_image		image;
     t_image     tex[6];
     t_image     pistol[4];
+    t_move      move;
     char        *name;
     int         fd;
     int         cols;
@@ -102,9 +111,10 @@ void    ray_caster(t_wolf_3d *wolf);
 void    init_wolf(t_wolf_3d *wolf);
 void    load_textures(t_wolf_3d *wolf);
 
-int		key_trans(int key, t_wolf_3d *wolf);
-int		key_down(int key, t_wolf_3d *wolf);
+int		key_press(int key, t_wolf_3d *wolf);
+int		key_release(int key, t_wolf_3d *wolf);
 
-void loop(t_wolf_3d *wolf);
+void movement(t_wolf_3d *wolf);
+int loop(t_wolf_3d *wolf);
 
 #endif

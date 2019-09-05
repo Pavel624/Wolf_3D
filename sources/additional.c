@@ -77,9 +77,9 @@ void	draw_sky(t_image *img,t_wolf_3d *wolf)
 
 void pistol_animation(t_wolf_3d *wolf)
 {
-    if (wolf->shot_frames >= 9)
+    if (wolf->shot_frames >= 11)
         mlx_put_image_to_window(wolf->mlx, wolf->window, wolf->pistol[1].image, (WIDTH - 100) / 2, HEIGHT - 300);
-    else if (wolf->shot_frames >= 6 && wolf->shot_frames < 9)
+    else if (wolf->shot_frames >= 6 && wolf->shot_frames < 11)
         mlx_put_image_to_window(wolf->mlx, wolf->window, wolf->pistol[2].image, (WIDTH - 100) / 2, HEIGHT - 300);
     else if (wolf->shot_frames >= 3 && wolf->shot_frames < 6)
         mlx_put_image_to_window(wolf->mlx, wolf->window, wolf->pistol[3].image, (WIDTH - 100) / 2, HEIGHT - 300);
@@ -88,7 +88,7 @@ void pistol_animation(t_wolf_3d *wolf)
     wolf->shot_frames--;
     if (wolf->shot_frames == 1)
     {
-        wolf->shot_frames = 12;
+        wolf->shot_frames = 16;
         wolf->shot_flag = 0;
     }
 }
@@ -99,7 +99,7 @@ void	animate_pistol(t_wolf_3d *wolf)
         mlx_put_image_to_window(wolf->mlx, wolf->window, wolf->pistol[0].image, (WIDTH - 100) / 2, HEIGHT - 300);
     else if (wolf->shot_flag == 1)
         {
-        if (wolf->shot_frames == 12)
+        if (wolf->shot_frames == 16)
             system("afplay -v 0.65 audio/gun_shot.wav &");
         pistol_animation(wolf);
     }
@@ -165,24 +165,22 @@ void init_wolf(t_wolf_3d *wolf)
     wolf->dir_y = 0;
     wolf->plane_x = 0;
     wolf->plane_y = 0.66;
-    wolf->move_speed = 0.15;
-    wolf->rotate_speed = 2 * M_PI / 36;
+    wolf->move_speed = 0.05;
+    wolf->rotate_speed =  M_PI / 72;
     wolf->color = 0;
     wolf->flag = 0;
     wolf->shot_flag = 0;
-    wolf->shot_frames = 12;
+    wolf->shot_frames = 16;
+    wolf->move.forward = 0;
+    wolf->move.back = 0;
+    wolf->move.left = 0;
+    wolf->move.right = 0;
     load_textures(wolf);
     // FOV = 2 * arctan(planeY / 1.0) - in degrees
 }
 
 void draw_walls(int x, int side, t_wolf_3d *wolf)
 {
-    if (wolf->flag == 0)
-    {
-        draw_sky(&wolf->image, wolf);
-        wolf->flag = 1;
-    }
-    //if (wolf->map[wolf->map_x][wolf->map_y] > 0)
     wolf->tex_num = (wolf->map[wolf->map_x][wolf->map_y] - 1) % 4;
     if (side == 0)
         wolf->wall_x = wolf->pos_y + wolf->wall_dist * wolf->ray_dir_y;
@@ -190,23 +188,34 @@ void draw_walls(int x, int side, t_wolf_3d *wolf)
         wolf->wall_x = wolf->pos_x + wolf->wall_dist * wolf->ray_dir_x;
     wolf->wall_x -= floor(wolf->wall_x);
     wolf->tex_x = (int) (wolf->wall_x * (double) TEX_WIDTH);
+
     if ((side == 0 && wolf->ray_dir_x > 0) || (side == 1 && wolf->ray_dir_y < 0))
         wolf->tex_x = TEX_WIDTH - wolf->tex_x - 1;
-    wolf->tex_x = abs(wolf->tex_x);
-    while (++wolf->draw_start < wolf->draw_end)
+
+    //wolf->tex_x = abs(wolf->tex_x);
+    while (wolf->draw_start < wolf->draw_end)
     {
-        int d = wolf->draw_start * 256 - HEIGHT * 128 + wolf->line_height * 128;
-        wolf->tex_y = abs(((d * TEX_HEIGHT) / wolf->line_height) / 256);
+        int d = (float) wolf->draw_start - HEIGHT * 0.5f + wolf->line_height * 0.5f;
+        wolf->tex_y = ((d * TEX_HEIGHT) / wolf->line_height);
         img_pixel_put_two(&wolf->image, x, wolf->draw_start, wolf);
+        wolf->draw_start++;
     }
 }
 
-void      loop(t_wolf_3d *wolf)
+void debug(t_wolf_3d *wolf)
 {
+    printf("pos_x - %f, pos_y - %f, wall_dist - %f, wall_x - %f \n",wolf->pos_x, wolf->pos_y, wolf->wall_dist, wolf->wall_x);
+}
+
+int      loop(t_wolf_3d *wolf)
+{
+    movement(wolf);
+    draw_sky(&wolf->image, wolf);
     ray_caster(wolf);
-    //animate_pistol(wolf);
-
-
+    debug(wolf);
+    mlx_put_image_to_window(wolf->mlx, wolf->window, wolf->image.image, 0, 0);
+    animate_pistol(wolf);
+    return (0);
 }
 
 void ray_caster(t_wolf_3d *wolf)
@@ -292,6 +301,4 @@ void ray_caster(t_wolf_3d *wolf)
         draw_floor(x, side, wolf);
         x++;
     }
-    mlx_put_image_to_window(wolf->mlx, wolf->window, wolf->image.image, 0, 0);
-    animate_pistol(wolf);
 }

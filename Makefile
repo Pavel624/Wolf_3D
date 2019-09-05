@@ -1,6 +1,6 @@
 NAME = wolf3d
 
-SRC_FILES  = main.c additional.c keys.c
+SRC_FILES  = main.c additional.c keys.c movement.c
 SRC_FOLDER = ./sources
 SRC = $(addprefix $(SRC_FOLDER)/, $(SRC_FILES))
 
