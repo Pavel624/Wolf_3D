@@ -23,8 +23,8 @@ int check_int_map2(t_wolf_3d *wolf, int i, int j)
     }
     if ((wolf->map[i][j] == 5) && (wolf->flag == 0))
     {
-        wolf->pos_x = i;
-        wolf->pos_y = j;
+        wolf->pos_x = i + 0.5;
+        wolf->pos_y = j + 0.5;
         wolf->flag = 1;
         wolf->map[i][j] = 0;
     }
