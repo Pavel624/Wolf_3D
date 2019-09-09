@@ -56,7 +56,6 @@ void		img_pixel_put_one(t_image *img, int x, int y, int color)
 void		img_pixel_put_two(t_image *img, int x, int y, t_wolf_3d *wolf)
 {
     if (x>= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
-        //*(int *) (img->ptr + (int) (index_matr(y, x, WIDTH) * img->bpp)) = color;
         ft_memcpy(img->ptr + 4 * WIDTH * y + x * 4, &wolf->tex[wolf->tex_num].ptr[wolf->tex_y % 64 * wolf->tex[wolf->tex_num].line_s + wolf->tex_x % 64 * wolf->tex[wolf->tex_num].bpp], sizeof(int));
 }
 
@@ -134,9 +133,7 @@ void draw_floor(int x, int side, t_wolf_3d *wolf)
     }
     if (wolf->draw_end < 0)
         wolf->draw_end = HEIGHT;
-
-    //wolf->tex_num = wolf->map[wolf->map_x][wolf->map_y] - 1;
-    y = wolf->draw_end;
+    y = wolf->draw_end + 1;
     while (y < HEIGHT)
     {
         current_dist = HEIGHT / (2.0 * y - HEIGHT);
@@ -147,10 +144,14 @@ void draw_floor(int x, int side, t_wolf_3d *wolf)
         int floor_tex_x, floor_tex_y;
         floor_tex_x = (int)(current_floor_x * TEX_WIDTH) % TEX_WIDTH;
         floor_tex_y = (int)(current_floor_y * TEX_HEIGHT) % TEX_HEIGHT;
+        if (wolf->map[(int) current_floor_x][(int) current_floor_y] == 0)
+            wolf->tex_num = 0;
+        else
+            wolf->tex_num = abs(wolf->map[(int) current_floor_x][(int) current_floor_y] + 1) % 4;
         //need some adjustments to make this piece of code more understandable
-        int r = (wolf->tex[1].ptr[wolf->tex[1].line_s * floor_tex_y + floor_tex_x * 4 + 2]) * 65536;
-        int g = (wolf->tex[1].ptr[wolf->tex[1].line_s * floor_tex_y + floor_tex_x * 4 + 1]) * 256;
-        int b = (wolf->tex[1].ptr[wolf->tex[1].line_s * floor_tex_y + floor_tex_x * 4]);
+        int r = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * floor_tex_y + floor_tex_x * 4 + 2]) * 65536;
+        int g = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * floor_tex_y + floor_tex_x * 4 + 1]) * 256;
+        int b = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * floor_tex_y + floor_tex_x * 4]);
         wolf->color = r + g + b;
         wolf->color = wolf->color >> 1 & 0x7F7F7F;
         img_pixel_put_one(&wolf->image, x, y, wolf->color);
@@ -192,10 +193,9 @@ void draw_walls(int x, int side, t_wolf_3d *wolf)
     if ((side == 0 && wolf->ray_dir_x > 0) || (side == 1 && wolf->ray_dir_y < 0))
         wolf->tex_x = TEX_WIDTH - wolf->tex_x - 1;
 
-    //wolf->tex_x = abs(wolf->tex_x);
     while (wolf->draw_start < wolf->draw_end)
     {
-        int d = (float) wolf->draw_start - HEIGHT * 0.5f + wolf->line_height * 0.5f;
+        int d = wolf->draw_start - HEIGHT * 0.5f + wolf->line_height * 0.5f;
         wolf->tex_y = ((d * TEX_HEIGHT) / wolf->line_height);
         img_pixel_put_two(&wolf->image, x, wolf->draw_start, wolf);
         wolf->draw_start++;
@@ -204,7 +204,8 @@ void draw_walls(int x, int side, t_wolf_3d *wolf)
 
 void debug(t_wolf_3d *wolf)
 {
-    printf("pos_x - %f, pos_y - %f, wall_dist - %f, wall_x - %f \n",wolf->pos_x, wolf->pos_y, wolf->wall_dist, wolf->wall_x);
+    printf("pos_x - %f, pos_y - %f, wall_dist - %f, wall_x - %f, tex_num - %d, map_x - %d, map_y - %d, map - %d \n",wolf->pos_x, wolf->pos_y, wolf->wall_dist, wolf->wall_x,
+            wolf->tex_num, wolf->map_x, wolf->map_y, wolf->map[wolf->map_x][wolf->map_y]);
 }
 
 int      loop(t_wolf_3d *wolf)

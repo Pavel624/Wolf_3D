@@ -72,5 +72,4 @@ void movement(t_wolf_3d *wolf)
         right(wolf);
     if (wolf->move.left == 1)
         left(wolf);
-
 }
