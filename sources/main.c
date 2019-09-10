@@ -232,7 +232,6 @@ int main(int argc, char **argv)
         ft_error("error map\n", 0);
     init(wolf);
     init_wolf(wolf);
-    //loop(wolf);
     mlx_hook(wolf->window, 2, 1L << 0, key_press, wolf);
     mlx_hook(wolf->window, 3, 1L << 1, key_release, wolf);
     mlx_hook(wolf->window, 17, 1L << 17, close_app, &wolf);

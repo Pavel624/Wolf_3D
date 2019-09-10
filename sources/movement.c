@@ -17,7 +17,7 @@ void forward(t_wolf_3d *wolf)
     static int i = 0;
 
     if (i % 40 == 0)
-        system("afplay -v 0.5 audio/shag0.wav &");
+        OS_VER == 0 ? system("afplay -v 0.5 audio/shag0.wav &") : system("paplay --volume 32768 audio/shag0.wav");
     if (i == 1000)
         i = 0;
     i++;
@@ -32,7 +32,7 @@ void back(t_wolf_3d *wolf)
     static int i = 0;
 
     if (i % 40 == 0)
-        system("afplay -v 0.5 audio/shag0.wav &");
+        OS_VER == 0 ? system("afplay -v 0.5 audio/shag0.wav &") : system("paplay --volume 32768 audio/shag0.wav");
     if (i == 1000)
         i = 0;
     i++;

@@ -42,21 +42,10 @@ void        load_textures(t_wolf_3d *wolf)
     wolf->pistol[3].image = mlx_xpm_file_to_image(wolf->mlx,"textures/gun_4.xpm", &pistol_res_width, &pistol_res_height);
 }
 
-int			index_matr(int row, int column, int map_width)
-{
-    return (row * map_width + column);
-}
-
 void		img_pixel_put_one(t_image *img, int x, int y, int color)
 {
     if (x>= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
-        *(int *) (img->ptr + (int) (index_matr(y, x, WIDTH) * img->bpp)) = color;
-}
-
-void		img_pixel_put_two(t_image *img, int x, int y, t_wolf_3d *wolf)
-{
-    if (x>= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
-        ft_memcpy(img->ptr + 4 * WIDTH * y + x * 4, &wolf->tex[wolf->tex_num].ptr[wolf->tex_y % 64 * wolf->tex[wolf->tex_num].line_s + wolf->tex_x % 64 * wolf->tex[wolf->tex_num].bpp], sizeof(int));
+        *(int *) (img->ptr + (int) ((WIDTH * y + x) * img->bpp)) = color;
 }
 
 void	draw_sky(t_image *img,t_wolf_3d *wolf)
@@ -99,7 +88,7 @@ void	animate_pistol(t_wolf_3d *wolf)
     else if (wolf->shot_flag == 1)
         {
         if (wolf->shot_frames == 16)
-            system("afplay -v 0.65 audio/gun_shot.wav &");
+            OS_VER == 0 ? system("afplay -v 0.65 audio/gun_shot.wav &") : system("paplay --volume 35000 audio/gun_shot.wav");
         pistol_animation(wolf);
     }
 }
@@ -141,20 +130,20 @@ void draw_floor(int x, int side, t_wolf_3d *wolf)
         double current_floor_x = weight * floor_x_wall + (1.0 - weight) * wolf->pos_x;
         double current_floor_y = weight * floor_y_wall + (1.0 - weight) * wolf->pos_y;
 
-        int floor_tex_x, floor_tex_y;
-        floor_tex_x = (int)(current_floor_x * TEX_WIDTH) % TEX_WIDTH;
-        floor_tex_y = (int)(current_floor_y * TEX_HEIGHT) % TEX_HEIGHT;
+        wolf->tex_x = (int)(current_floor_x * TEX_WIDTH) % TEX_WIDTH;
+        wolf->tex_y = (int)(current_floor_y * TEX_HEIGHT) % TEX_HEIGHT;
         if (wolf->map[(int) current_floor_x][(int) current_floor_y] == 0)
             wolf->tex_num = 0;
         else
             wolf->tex_num = abs(wolf->map[(int) current_floor_x][(int) current_floor_y] + 1) % 4;
         //need some adjustments to make this piece of code more understandable
-        int r = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * floor_tex_y + floor_tex_x * 4 + 2]) * 65536;
-        int g = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * floor_tex_y + floor_tex_x * 4 + 1]) * 256;
-        int b = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * floor_tex_y + floor_tex_x * 4]);
+        int r = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * wolf->tex_y + wolf->tex_x * 4 + 2]) << 16;
+        int g = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * wolf->tex_y + wolf->tex_x * 4 + 1]) << 8;
+        int b = (wolf->tex[wolf->tex_num].ptr[wolf->tex[wolf->tex_num].line_s * wolf->tex_y + wolf->tex_x * 4]);
         wolf->color = r + g + b;
         wolf->color = wolf->color >> 1 & 0x7F7F7F;
         img_pixel_put_one(&wolf->image, x, y, wolf->color);
+
         y++;
     }
 
@@ -166,7 +155,7 @@ void init_wolf(t_wolf_3d *wolf)
     wolf->dir_y = 0;
     wolf->plane_x = 0;
     wolf->plane_y = 0.66;
-    wolf->move_speed = 0.05;
+    wolf->move_speed = 0.059;
     wolf->rotate_speed =  M_PI / 72;
     wolf->color = 0;
     wolf->flag = 0;
@@ -197,7 +186,10 @@ void draw_walls(int x, int side, t_wolf_3d *wolf)
     {
         int d = wolf->draw_start - HEIGHT * 0.5f + wolf->line_height * 0.5f;
         wolf->tex_y = ((d * TEX_HEIGHT) / wolf->line_height);
-        img_pixel_put_two(&wolf->image, x, wolf->draw_start, wolf);
+		ft_memcpy(&wolf->color, &wolf->tex[wolf->tex_num].ptr[wolf->tex_y % 64 * wolf->tex[wolf->tex_num].line_s + wolf->tex_x % 64 * wolf->tex[wolf->tex_num].bpp], sizeof(int));
+		if (side == 1)
+			wolf->color = wolf->color >> 1 & 0x7F7F7F;
+		img_pixel_put_one(&wolf->image, x, wolf->draw_start,wolf->color);
         wolf->draw_start++;
     }
 }

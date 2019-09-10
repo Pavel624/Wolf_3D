@@ -13,7 +13,7 @@ FLAGS = -Wall -Werror -Wextra -O3
 OSVER := $(shell uname -s)
 
 ifeq ($(OSVER), Linux)
-	LIBFLAGS = -lmlx -lXext -lX11 minilibx/libmlx.a -lm
+	LIBFLAGS = -lXext -lX11 minilibx/libmlx.a -g3 -lbsd -lm -lmlx
 else
 	LIBFLAGS = -framework OpenGL -framework AppKit -lm -lmlx
 endif
