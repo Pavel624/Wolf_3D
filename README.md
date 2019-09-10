@@ -8,12 +8,12 @@ Implementation of Wolf_3D project at 42
 ## Installation for Mac:
 ```
 make
-./wolf_3d maps/{some_map}
+./wolf3d maps/{some_map}
 ```
 ## Installation for Linux:
 ```
 sudo apt update && sudo apt upgrade -y
 sh linux-make.sh
 make
-./wolf_3d maps/{some_map}
+./wolf3d maps/{some_map}
 ```
