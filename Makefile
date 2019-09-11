@@ -2,6 +2,7 @@ NAME = wolf3d
 
 SRC_FILES  = main.c additional.c keys.c movement.c
 SRC_FOLDER = ./sources
+INC_FOLDER = ./includes/
 SRC = $(addprefix $(SRC_FOLDER)/, $(SRC_FILES))
 
 OBJ_FILES = $(SRC_FILES:.c=.o)
@@ -42,7 +43,7 @@ $(LIBFT):
 
 $(OBJ_FOLDER)/%.o : $(SRC_FOLDER)/%.c
 	@mkdir -p $(OBJ_FOLDER)
-	@gcc $(FLAGS) -c $< -o $@ -I$(INC_LIB)
+	@gcc $(FLAGS) -c $< -o $@ -I$(INC_LIB) -I$(INC_FOLDER)
 
 clean:
 	@make -C libft clean
