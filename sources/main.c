@@ -29,7 +29,7 @@ int check_int_map2(t_wolf_3d *wolf, int i, int j)
 {
     if ((i == 0) || (j == 0) || (i == (wolf->lines - 1)) || (j == (wolf->cols - 1)))
     {
-        if (wolf->map[i][j] == 0 || wolf->map[i][j] == 5)
+        if (wolf->map[i][j] <= 0 || wolf->map[i][j] == 5)
             return (-1);
     }
     if ((wolf->map[i][j] == 5) && (wolf->flag == 0))
@@ -42,7 +42,6 @@ int check_int_map2(t_wolf_3d *wolf, int i, int j)
     else if ((wolf->map[i][j] == 5) && (wolf->flag == 1))
         return (-1);
     return (0);
-
 }
 
 int check_int_map(t_wolf_3d *wolf)
@@ -83,7 +82,7 @@ int check_map_one(t_wolf_3d *wolf)
     }
     if ((get_next_line(wolf->fd, &line) <= 0))
     {
-        free(&line);
+        ft_strdel(&line);
         return (-1);
     }
     ft_strdel(&line);
@@ -137,7 +136,6 @@ int		check_map_two3(t_wolf_3d *wolf, char *line)
     return (0);
 }
 
-
 int		check_map_two2(t_wolf_3d *wolf)
 {
     char	*line;
@@ -150,7 +148,7 @@ int		check_map_two2(t_wolf_3d *wolf)
     {
         if (check_map_two3(wolf, line) == -1)
         {
-            free(&line);
+            ft_strdel(&line);
             return (-1);
         }
     }
@@ -164,8 +162,6 @@ int		check_map_two(t_wolf_3d *wolf)
     char	*line;
     char	**tab;
 
-    if (check_map_two2(wolf) == -1)
-        return (-1);
     wolf->map =(int **)malloc(sizeof(int *) * (wolf->lines));
     a[1] = 0;
     wolf->fd = open(wolf->name, O_RDONLY);
@@ -189,16 +185,16 @@ int		check_map_two(t_wolf_3d *wolf)
     return ((a[0] == -1) ? -1 : 0);
 }
 
-int     valid(t_wolf_3d *wolf)
+int		valid(t_wolf_3d *wolf)
 {
     int	i;
     int	j;
 
-	if (check_map_one(wolf) == -1)
+	if (check_map_one(wolf) == -1 || check_map_two2(wolf) == -1)
 		return (0);
     if ((check_map_two(wolf) == -1) || (check_int_map(wolf) == -1))
     {
-        //free_double_arr(wolf->map);
+        free_double_arr(wolf->map);
         return (0);
     }
     else
@@ -240,7 +236,7 @@ static	void	init(t_wolf_3d *wolf)
 
     image = &wolf->image;
     wolf->mlx = mlx_init();
-    wolf->window = mlx_new_window(wolf->mlx, WIDTH, HEIGHT, ft_strjoin("Wolf_3d ", wolf->name));
+    wolf->window = mlx_new_window(wolf->mlx, WIDTH, HEIGHT, "Wolf_3d");
     image->image = mlx_new_image(wolf->mlx, WIDTH, HEIGHT);
     image->ptr = mlx_get_data_addr(image->image, &image->bpp,
                                    &image->line_s, &image->endian);
@@ -259,7 +255,10 @@ int main(int argc, char **argv)
         ft_error("Can't allocate enough memory for the structure\n", 0);
     wolf->name = argv[1];
     if (!valid(wolf))
+	{
+		free(wolf);
         ft_error("error map\n", 0);
+	}
     init(wolf);
     init_wolf(wolf);
     mlx_hook(wolf->window, 2, 1L << 0, key_press, wolf);

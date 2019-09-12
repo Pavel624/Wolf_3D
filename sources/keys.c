@@ -17,8 +17,7 @@ int		key_release(int key, t_wolf_3d *wolf)
     if (key == KEY_ESC)
     {
         mlx_destroy_image(wolf->mlx, wolf->window);
-        //if (OS_VER == 0)
-		//	system("killall -9 afplay");
+        free(wolf);
         exit(EXIT_SUCCESS);
     }
     if (key == KEY_UP || key == KEY_W)
